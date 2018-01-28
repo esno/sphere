@@ -38,7 +38,7 @@ void sphere_composite_redirect(Display *dpy, int screen_count)
 {
   int i;
 
-  for(i = 0; i < screen_count, ++i)
+  for(i = 0; i < screen_count; ++i)
   {
     XCompositeRedirectSubwindows(
       dpy,
