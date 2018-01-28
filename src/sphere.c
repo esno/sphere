@@ -2,67 +2,57 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
-
 #include <X11/Xlib.h>
-#include <X11/extensions/Xcomposite.h>
 
-#define SPHERE_COMP_VERSION_MAJOR 0
-#define SPHERE_COMP_VERSION_MINOR 4
+#include "composite.h"
+#include "sphere.h"
 
-typedef struct {
-  Display *dpy;
-  struct {
-    int error_base;
-    int event_base;
-    struct {
-      int major;
-      int minor;
-    } version;
-  } composite;
-} sphere_mgr_t;
-
-bool sphere_new_session(sphere_mgr_t *sphere)
+bool sphere_init(sphere_mgr_t *sphere)
 {
-  bool comp;
-  sphere->dpy = XOpenDisplay(NULL);
+  sphere_xorg_t *X = malloc(sizeof(sphere_xorg_t));
+  sphere_composite_t *c;
 
-  if(!sphere->dpy)
+  if(!X)
+  {
+    fprintf(stderr, "Cannot allocate memory for sphere\n");
+    return false;
+  }
+
+  X->dpy = XOpenDisplay(NULL);
+
+  if(!X->dpy)
   {
     fprintf(stderr, "cannot open X display session\n");
     return false;
   }
 
-  comp = XCompositeQueryExtension(
-    sphere->dpy,
-    &sphere->composite.event_base,
-    &sphere->composite.error_base);
+  X->screens.count = ScreenCount(X->dpy);
+  fprintf(stdout, "Detected %d screens\n", X->screens.count);
 
-  if(!comp)
+  c = sphere_composite_init(X->dpy);
+
+  if(!c)
   {
-    fprintf(stderr, "X composite extension not available\n");
+    fprintf(stderr, "Xorg Composite Extension is missing\n");
     return false;
   }
 
-  sphere->composite.version.major = SPHERE_COMP_VERSION_MAJOR;
-  sphere->composite.version.minor = SPHERE_COMP_VERSION_MINOR;
-  XCompositeQueryVersion(
-    sphere->dpy,
-    &sphere->composite.version.major,
-    &sphere->composite.version.minor);
-
   fprintf(stdout, "X composite extension version %d.%d\n",
-    sphere->composite.version.major,
-    sphere->composite.version.minor);
+    c->version.major,
+    c->version.minor);
+
+  sphere->X = X;
+  sphere->composite = c;
 
   return true;
 }
 
 int main()
 {
-  sphere_mgr_t *sphere = malloc(sizeof(sphere_mgr_t));
+  sphere_mgr_t sphere;
 
-  memset(sphere, 0, sizeof(sphere_mgr_t));
-  sphere_new_session(sphere);
+  memset(&sphere, 0, sizeof(sphere_mgr_t));
+  sphere_init(&sphere);
 
   return 0;
 }

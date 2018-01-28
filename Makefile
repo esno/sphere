@@ -1,7 +1,11 @@
-all: sphere
+all: composite sphere
 
-sphere:
-	${CC} ./src/sphere.c -lX11 -lXcomposite -o sphere
+composite:
+	${CC} -c ./src/composite.c -I./src/include -lX11 -lXcomposite
+
+sphere: composite
+	${CC} -c ./src/sphere.c -I./src/include -lX11
+	${CC} -o sphere composite.o sphere.o -lX11 -lXcomposite
 
 clean:
-	rm -rf ./sphere
+	rm -rf ./sphere ./*.o
