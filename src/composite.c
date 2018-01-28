@@ -33,3 +33,17 @@ sphere_composite_t *sphere_composite_init(Display *dpy)
 
   return c;
 }
+
+void sphere_composite_redirect(Display *dpy, int screen_count)
+{
+  int i;
+
+  for(i = 0; i < screen_count, ++i)
+  {
+    XCompositeRedirectSubwindows(
+      dpy,
+      RootWindow(dpy, i),
+      CompositeRedirectAutomatic
+    );
+  }
+}

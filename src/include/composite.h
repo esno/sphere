@@ -16,5 +16,6 @@ typedef struct {
 } sphere_composite_t;
 
 sphere_composite_t *sphere_composite_init(Display *dpy);
+void sphere_composite_redirect(Display *dpy, int screen_count);
 
 #endif
